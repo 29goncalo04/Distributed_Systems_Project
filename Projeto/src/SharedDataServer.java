@@ -3,19 +3,6 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-/*
-    !!!!!!!!
-    Tirar os syncronized e meter locks
-    !!!!!!!!
-
-    Separar Servidor e clientes
-    
-    Diferentes clientes podem estar a usar o servidor mas existe um maxSessoes concorrentes (S)
-
- */
-
-
-
 // Main Server Class
 public class SharedDataServer {
     private static final int PORT = 12345;

@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientManager implements Runnable{
     private static final Map<String, String> registeredUsers; // nome e password
-    private int MAX_SESSIONS;
+    
 
     // Registo de client
 
@@ -18,6 +18,7 @@ public class ClientManager implements Runnable{
     private static int currentClients = 0;
 
     private final Socket clientSocket;
+    private int MAX_SESSIONS;
 
     public ClientManager(Socket clientSocket, int MAX_SESSIONS) {
         this.clientSocket = clientSocket;
@@ -74,7 +75,7 @@ public class ClientManager implements Runnable{
             // Aguardar até que haja espaço disponível para clientes
             lock.lock();
             try {
-                while (currentClients >= Server.MAX_SESSIONS) {
+                while (currentClients >= MAX_SESSIONS) {
                     out.writeUTF("Server is full. Waiting for an available slot...");
                     notFull.await();
                 }

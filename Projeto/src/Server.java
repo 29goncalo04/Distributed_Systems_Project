@@ -8,7 +8,7 @@ public class Server {
     private static final int PORT = 12345;
     private static final int MAX_SESSIONS = 10; // Adjust based on S
     private static final Map<Integer, Socket> clientConnections = new HashMap<>();
-    private static final ClientManager cmanager = new ClientManager();
+    public static final ClientManager cmanager = new ClientManager();
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
@@ -23,13 +23,8 @@ public class Server {
                 t.start();
             }
         } finally{
-            //if(serverSocket != null && !serverSocket.isClosed()){
-            //    try{
-                    serverSocket.close();
-                    System.out.println("Server socket has been closed");
-                //} catch(IOException e){
-                //    e.printStackTrace();
-                //}
+            serverSocket.close();
+            System.out.println("Server socket has been closed");
         }
     }
 }

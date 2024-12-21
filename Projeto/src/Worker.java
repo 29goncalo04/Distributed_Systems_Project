@@ -1,13 +1,9 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Worker implements Runnable{
-    private Map<String, String> registeredUsers = new HashMap<String,String>(); // username e password
-    private Queue<String> autenticatedUsers = new LinkedList<String>();
-
     // Registo de client
 
     // Se o maxClients == S então fazemos .await()
@@ -32,71 +28,48 @@ public class Worker implements Runnable{
         try{
             DataInputStream in = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream())); 
-
+            String username = "";
+            String password = "";
             boolean authenticated = false;
+            out.writeUTF("Choose an option: [register] or [login]");
+            out.flush();
             while (!authenticated) {
                 try{
-                    out.writeUTF("Choose an option: [register] or [login]");
-                    out.flush();
                     String choice = in.readUTF();
 
                     switch (choice.toLowerCase()) {
                         case "register":
-                            boolean usernameTaken = false;
-                            while(usernameTaken==false){
-                                out.writeUTF("Enter username:");
+                            out.writeUTF("Enter username:");
+                            out.flush();
+                            username = in.readUTF();
+                            out.writeUTF("Enter password:");
+                            out.flush();
+                            password = in.readUTF();
+                            if (cmanager.registerUser(username, password)) {
+                                out.writeUTF("Registration successful.\nChoose an option: [register] or [login]");
                                 out.flush();
-                                String username = in.readUTF();
-
-                                out.writeUTF("Enter password:");
+                            } else {
+                                out.writeUTF("Username already taken. Try again.\nChoose an option: [register] or [login]");
                                 out.flush();
-                                String password = in.readUTF();
-
-                                if (cmanager.registerUser(username, password)) {
-                                    lock.lock();
-                                    try{
-                                        registeredUsers.put(username, password);
-                                        out.writeUTF("Registration successful. You can now log in.");
-                                        out.flush();
-                                        usernameTaken = true;
-                                    } finally{
-                                        lock.unlock();
-                                    }
-                                } else {
-                                    out.writeUTF("Username already taken. Try again.");
-                                    out.flush();
-                                }
+                            }
                             break;
-                        }
                         case "login":
                             out.writeUTF("Enter username:");
                             out.flush();
-                            String username = in.readUTF();
-                            boolean passwordInvalid = false;
-                            while(passwordInvalid == false){
-                                out.writeUTF("Enter password:");
+                            username = in.readUTF();
+                            out.writeUTF("Enter password:");
+                            out.flush();
+                            password = in.readUTF();
+                            if (cmanager.authenticateUser(username, password)) {
+                                n_autenticatedUsers++;
+                                out.writeUTF("Login successful! Welcome, " + username + "!");
                                 out.flush();
-                                String password = in.readUTF();
-
-                                if (cmanager.authenticateUser(username, password)) {
-                                    lock.lock();
-                                    try{
-                                        autenticatedUsers.add(username);
-                                        n_autenticatedUsers++;
-                                        out.writeUTF("Login successful! Welcome, " + username + "!");
-                                        out.flush();
-                                        authenticated = true;
-                                    } finally {
-                                        lock.unlock();
-                                    }
-
-                                } else {
-                                    out.writeUTF("Invalid credentials. Try again.");
-                                    out.flush();
-                                    passwordInvalid = true;
-                                }
+                                authenticated = true;
+                            } else {
+                                out.writeUTF("Invalid credentials. Try again.\nChoose an option: [register] or [login]");
+                                out.flush();
+                            }
                             break;
-                        }
                         default:
                             out.writeUTF("Invalid option. Please choose [register] or [login].");
                             out.flush();
@@ -107,15 +80,6 @@ public class Worker implements Runnable{
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (clientSocket != null && !clientSocket.isClosed()) {
-                    clientSocket.close();
-                    System.out.println("Client socket closed.");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

@@ -18,12 +18,26 @@ public class Client {
         String serverMessage;
         String userInput;
 
-        while ((serverMessage = in.readUTF()) != null) {
-            System.out.println(serverMessage);
-            userInput = console.readLine();
-            out.writeUTF(userInput);
-            out.flush();
+        while (true) {
+            try {
+                serverMessage = in.readUTF();
+                if (serverMessage == null || serverMessage.equals("Goodbye!")) {
+                    break; // Sai do loop quando o servidor envia "Goodbye!" ou quando o servidor fecha
+                }
+
+                // Substitui os \n por quebra de linha e exibe
+                //String formattedMessage = serverMessage.replace("\n", System.lineSeparator());
+                //System.out.println(formattedMessage);
+                System.out.println(serverMessage);
+                userInput = console.readLine();
+                out.writeUTF(userInput);
+                out.flush();
+            } catch (IOException e) {
+                System.out.println("Error reading from server or sending data: " + e.getMessage());
+                break;
+            }
         }
+        
         socket.shutdownOutput();
         socket.shutdownInput();
         socket.close();

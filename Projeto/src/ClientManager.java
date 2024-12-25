@@ -221,13 +221,16 @@ public class ClientManager{
 
                 // Envia os resultados
                 if (!result.isEmpty()) {
+                    // Construir a resposta como uma única mensagem
+                    StringBuilder response = new StringBuilder("Retrieved values:\n");
                     for (Map.Entry<String, byte[]> entry : result.entrySet()) {
                         String key = entry.getKey();
-                        String value = new String(entry.getValue(), "UTF-8");
-                        value = value.replace("\\n", "\n");  // Corrige a formatação
-                        out.writeUTF("Value for key " + key + ":\n" + value);
-                        out.flush();
+                        String value = new String(entry.getValue(), "UTF-8").replace("\\n", "\n");
+                        response.append("Value for key ").append(key).append(":\n").append(value).append("\n");
                     }
+                    response.append("Choose an option: [put], [get], [multiPut], [multiGet], or [exit]");
+                    out.writeUTF(response.toString());
+                    out.flush();
                 } else {
                     out.writeUTF("No keys found.\nChoose an option: [put], [get], [multiPut], [multiGet], or [exit]");
                     out.flush();

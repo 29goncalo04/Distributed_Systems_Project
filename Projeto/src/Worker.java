@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -14,13 +16,10 @@ public class Worker implements Runnable{
 
     private final Socket clientSocket;
     public ClientManager cmanager;
-    public int MAX_SESSIONS;
-    public int n_authenticatedUsers = 0;
 
-    public Worker(Socket clientSocket, ClientManager cmanager ,int MAX_SESSIONS) {
+    public Worker(Socket clientSocket, ClientManager cmanager) {
         this.clientSocket = clientSocket;
         this.cmanager = cmanager;
-        this.MAX_SESSIONS = MAX_SESSIONS;
     }
     
     @Override
@@ -57,16 +56,16 @@ public class Worker implements Runnable{
                             break;
 
                         case "login":
-                            // Verifica se o número máximo de sessões foi atingido
-                            lock.lock();
-                            try{
-                                while(n_authenticatedUsers >= MAX_SESSIONS){
-                                    // Aguarda até que haja espaço para novos usuários
-                                    notFull.await();
-                                }
-                            } finally {
-                                lock.unlock();
-                            }
+                            // // Verifica se o número máximo de sessões foi atingido 
+                            // lock.lock();
+                            // try{
+                            //     while(activeSessions >= MAX_SESSIONS){
+                            //         // Aguarda até que haja espaço para novos usuários
+                            //         isAvailable.await();
+                            //     }
+                            // } finally {
+                            //     lock.unlock();
+                            // }
 
                             out.writeUTF("Enter username:");
                             out.flush();
@@ -77,7 +76,6 @@ public class Worker implements Runnable{
 
                             if (cmanager.authenticateUser(username, password)) {
                                 // Autenticação bem-sucedida
-                                n_authenticatedUsers++;
                                 out.writeUTF("Login successful! Welcome, " + username + "!\nChoose an option: [put], [get], [multiget], [multiput], or [exit]");
                                 out.flush();
                                 authenticated = true;
@@ -93,21 +91,19 @@ public class Worker implements Runnable{
                     }
                 } catch (Exception e){break;}
             }
-            try{
-                cmanager.dataHandle(clientSocket,in,out);
-            } finally {
-                // Quando o cliente desconectar, reduz a contagem de usuários autenticados
-                lock.lock();
-                try {
-                    n_authenticatedUsers--;
-                    notFull.signal(); // Notifica uma thread aguardando para permitir novo login
-                } finally {
-                    lock.unlock();
-                }
-            }
-
+            cmanager.dataHandle(clientSocket,in,out);
+            clientSocket.shutdownInput();
+            clientSocket.shutdownOutput();
+            clientSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Client error " + e.getMessage());
+        } finally {
+            try{
+                clientSocket.close();
+            } catch (IOException e){
+                System.out.println("Closing client error " + e.getMessage());
+            }
+            Server.notifySessionEnd();
         }
     }
 }

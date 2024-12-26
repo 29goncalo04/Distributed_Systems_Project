@@ -27,16 +27,16 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
                 lock.lock();
                 try{
-                    System.out.println("Waiting queue size before: " + waitingQueue.size());
                     if(activeSessions >= MAX_SESSIONS){
                         waitingQueue.add(clientSocket);
-                        sendWaitingMessage(clientSocket);
-                        System.out.println("Waiting queue size after: " + waitingQueue.size());
-                        isAvailable.await();
+                        new Thread(() -> {
+                            sendWaitingMessage(clientSocket);
+                        }).start();
+                    } else {
+                        System.out.println("a tua mae :" + activeSessions);
+                        activeSessions++;
+                        startWorker(clientSocket);
                     }
-                    activeSessions++;
-                    System.out.println("a tua mae :" + activeSessions);
-                    startWorker(clientSocket);
                 } finally {
                     lock.unlock();
                 }
@@ -60,6 +60,16 @@ public class Server {
             try (DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
                 out.writeUTF("Server is full. You are in the waiting queue. Please wait until a slot becomes available.");
                 out.flush();
+                lock.lock();
+                try{
+                    while (activeSessions >= MAX_SESSIONS) { 
+                        isAvailable.await(); 
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    lock.unlock();
+                }
                 
             } catch (IOException e) {
                 System.out.println("Error sending waiting message: " + e.getMessage());

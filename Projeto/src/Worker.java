@@ -1,8 +1,5 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Worker implements Runnable{
@@ -12,7 +9,6 @@ public class Worker implements Runnable{
 
     // Lock para controlar o acesso ao número de clientes simultâneos
     private static final ReentrantLock lock = new ReentrantLock();
-    private static final Condition notFull = lock.newCondition();
 
     private final Socket clientSocket;
     public ClientManager cmanager;
@@ -56,17 +52,6 @@ public class Worker implements Runnable{
                             break;
 
                         case "login":
-                            // // Verifica se o número máximo de sessões foi atingido 
-                            // lock.lock();
-                            // try{
-                            //     while(activeSessions >= MAX_SESSIONS){
-                            //         // Aguarda até que haja espaço para novos usuários
-                            //         isAvailable.await();
-                            //     }
-                            // } finally {
-                            //     lock.unlock();
-                            // }
-
                             out.writeUTF("Enter username:");
                             out.flush();
                             username = in.readUTF();

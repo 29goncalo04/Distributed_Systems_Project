@@ -25,9 +25,6 @@ public class Client {
                     break; // Sai do loop quando o servidor envia "Goodbye!" ou quando o servidor fecha
                 }
 
-                // Substitui os \n por quebra de linha e exibe
-                //String formattedMessage = serverMessage.replace("\n", System.lineSeparator());
-                //System.out.println(formattedMessage);
                 System.out.println(serverMessage);
                 userInput = console.readLine();
                 out.writeUTF(userInput);

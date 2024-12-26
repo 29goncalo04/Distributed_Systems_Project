@@ -3,23 +3,21 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
     private static final int PORT = 12345;
-    private static final int MAX_SESSIONS = 2; 
+    private static final int MAX_SESSIONS = 1; 
     public static final ClientManager cmanager = new ClientManager();
     private static final Queue<Socket> waitingQueue = new LinkedList<>();
     private static final ReentrantLock lock = new ReentrantLock();
     private static final Condition isAvailable = lock.newCondition();
     private static int activeSessions = 0;
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         ServerSocket serverSocket = null;
         try{
             serverSocket = new ServerSocket(PORT);
@@ -29,13 +27,16 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
                 lock.lock();
                 try{
+                    System.out.println("Waiting queue size before: " + waitingQueue.size());
                     if(activeSessions >= MAX_SESSIONS){
                         waitingQueue.add(clientSocket);
-                        startWaitingThread(clientSocket);
-                    } else {
-                        activeSessions++;
-                        startWorker(clientSocket);
+                        sendWaitingMessage(clientSocket);
+                        System.out.println("Waiting queue size after: " + waitingQueue.size());
+                        isAvailable.await();
                     }
+                    activeSessions++;
+                    System.out.println("a tua mae :" + activeSessions);
+                    startWorker(clientSocket);
                 } finally {
                     lock.unlock();
                 }
@@ -47,61 +48,23 @@ public class Server {
         }
     }
 
-    private static void startWorker(Socket clienSocket){
-        Worker worker = new Worker(clienSocket, cmanager);
+    private static void startWorker(Socket clientSocket){
+        Worker worker = new Worker(clientSocket, cmanager);
         Thread t = new Thread(worker);
         t.start();
     }
 
-    private static void startWaitingThread(Socket clientSocket) {
-        Thread waitingThread = new Thread(() -> {
-            try (DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                 DataInputStream in = new DataInputStream(clientSocket.getInputStream())) {
-                out.writeUTF("Server is full. You are in the waiting queue. You can [register] while waiting.");
+    private static void sendWaitingMessage(Socket clientSocket) {
+        // Envia uma mensagem informando ao cliente que ele está na fila
+        new Thread(() -> {
+            try (DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
+                out.writeUTF("Server is full. You are in the waiting queue. Please wait until a slot becomes available.");
                 out.flush();
-
-                while (true) {
-                    lock.lock();
-                    try {
-                        if (activeSessions < MAX_SESSIONS) {
-                            activeSessions++;
-                            startWorker(clientSocket);
-                            break;
-                        } else if (in.available() > 0) {
-                            String message = in.readUTF();
-                            if (message.equals("exit")) {
-                                out.writeUTF("Goodbye!");
-                                out.flush();
-                                clientSocket.close();
-                                break;
-                            } else if (message.equals("register")) {
-                                out.writeUTF("Enter username:");
-                                out.flush();
-                                String username = in.readUTF();
-                                out.writeUTF("Enter password:");
-                                out.flush();
-                                String password = in.readUTF();
-
-                                if (cmanager.registerUser(username, password)) {
-                                    out.writeUTF("Registration successful! Please wait until a slot becomes available.");
-                                } else {
-                                    out.writeUTF("Username already taken. Try again.");
-                                }
-                                out.flush();
-                            } else {
-                                out.writeUTF("Invalid command. Use 'register' or 'exit'.");
-                                out.flush();
-                            }
-                        }
-                    } finally {
-                        lock.unlock();
-                    }
-                }
+                
             } catch (IOException e) {
-                System.out.println("Error handling waiting client: " + e.getMessage());
+                System.out.println("Error sending waiting message: " + e.getMessage());
             }
-        });
-        waitingThread.start();
+        }).start();
     }
 
     public static void notifySessionEnd(){
@@ -110,7 +73,6 @@ public class Server {
             activeSessions--;
             if(!waitingQueue.isEmpty()){
                 Socket nextClient = waitingQueue.poll(); //usamos poll por causa do caso em que a lista é vazia
-                activeSessions++;
                 startWorker(nextClient);
             } else {
                 isAvailable.signal();

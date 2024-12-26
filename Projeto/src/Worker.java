@@ -76,7 +76,12 @@ public class Worker implements Runnable{
                     }
                 } catch (Exception e){break;}
             }
-            cmanager.dataHandle(clientSocket,in,out);
+            lock.lock();
+            try{
+                cmanager.dataHandle(clientSocket,in,out);
+            } finally {
+                lock.unlock();
+            }
             clientSocket.shutdownInput();
             clientSocket.shutdownOutput();
             clientSocket.close();
@@ -88,6 +93,7 @@ public class Worker implements Runnable{
             } catch (IOException e){
                 System.out.println("Closing client error " + e.getMessage());
             }
+            System.out.println("Buguei man");
             Server.notifySessionEnd();
         }
     }

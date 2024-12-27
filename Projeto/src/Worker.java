@@ -3,9 +3,6 @@ import java.net.Socket;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Worker implements Runnable{
-    // Registo de client
-
-    // Se o maxClients == S então fazemos .await()
 
     // Lock para controlar o acesso ao número de clientes simultâneos
     private static final ReentrantLock lock = new ReentrantLock();
@@ -86,7 +83,7 @@ public class Worker implements Runnable{
             clientSocket.shutdownOutput();
             clientSocket.close();
         } catch (IOException e) {
-            System.out.println("Client error " + e.getMessage());
+
         } finally {
             try{
                 clientSocket.close();

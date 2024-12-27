@@ -45,14 +45,7 @@ public class Client {
                 try {
                     String serverMessage;
                     while ((serverMessage = in.readUTF()) != null) {
-                        if(serverMessage.equalsIgnoreCase("Server is full. You are in the waiting queue. Please wait until a slot becomes available. Use [exit] to leave the queue")){
-                            client.lock.lock();
-                            try {
-                                client.setEmEspera(true);
-                            } finally {
-                                client.lock.unlock();
-                            }
-                        } else if(serverMessage.equalsIgnoreCase("Choose an option: [register], [login] or [exit]")){
+                        if(serverMessage.equalsIgnoreCase("Choose an option: [register], [login] or [exit]")){
                             client.lock.lock(); 
                             try{
                                 client.setEmEspera(false);

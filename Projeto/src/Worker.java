@@ -11,7 +11,7 @@ public class Worker implements Runnable{
     private static final ReentrantLock lock = new ReentrantLock();
 
     private final Socket clientSocket;
-    public final ClientManager cmanager;
+    public ClientManager cmanager;
 
     public Worker(Socket clientSocket, ClientManager cmanager) {
         this.clientSocket = clientSocket;
@@ -93,7 +93,7 @@ public class Worker implements Runnable{
             } catch (IOException e){
                 System.out.println("Closing client error " + e.getMessage());
             }
-            System.out.println("Buguei man");
+            Server.decrementActiveSessions();
             Server.notifySessionEnd();
         }
     }

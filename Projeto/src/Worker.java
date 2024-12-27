@@ -27,7 +27,7 @@ public class Worker implements Runnable{
             String password = "";
             boolean authenticated = false;
 
-            out.writeUTF("Choose an option: [register] or [login]");
+            out.writeUTF("Choose an option: [register], [login] or [exit]");
             out.flush();
 
             while (!authenticated) {
@@ -43,10 +43,10 @@ public class Worker implements Runnable{
                             out.flush();
                             password = in.readUTF();
                             if (cmanager.registerUser(username, password)) {
-                                out.writeUTF("Registration successful.\nChoose an option: [register] or [login]");
+                                out.writeUTF("Registration successful.\nChoose an option: [register], [login] or [exit]");
                                 out.flush();
                             } else {
-                                out.writeUTF("Username already taken. Try again.\nChoose an option: [register] or [login]");
+                                out.writeUTF("Username already taken. Try again.\nChoose an option: [register], [login] or [exit]");
                                 out.flush();
                             }
                             break;
@@ -65,12 +65,12 @@ public class Worker implements Runnable{
                                 out.flush();
                                 authenticated = true;
                             } else {
-                                out.writeUTF("Invalid credentials. Try again.\nChoose an option: [register] or [login]");
+                                out.writeUTF("Invalid credentials. Try again.\nChoose an option: [register], [login] or [exit]");
                                 out.flush();
                             }
                             break;
                         default:
-                            out.writeUTF("Invalid option. Please choose [register] or [login].");
+                            out.writeUTF("Invalid option. Please choose [register], [login] or [exit].");
                             out.flush();
                             break;
                     }

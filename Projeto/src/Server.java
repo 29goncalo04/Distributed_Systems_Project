@@ -33,7 +33,6 @@ public class Server {
                             sendWaitingMessage(clientSocket);
                         }).start();
                     } else {
-                        System.out.println("a tua mae :" + activeSessions);
                         activeSessions++;
                         startWorker(clientSocket);
                     }
@@ -49,22 +48,35 @@ public class Server {
     }
 
     private static void startWorker(Socket clientSocket){
-        Worker worker = new Worker(clientSocket, cmanager);
-        Thread t = new Thread(worker);
-        t.start();
+        try {
+            // Notifica o cliente que ele saiu da fila e pode interagir
+            DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+            out.writeUTF("You are no longer in the queue. You can now interact with the server.");
+            out.flush();
+    
+            // Inicia o trabalhador
+            Worker worker = new Worker(clientSocket, cmanager);
+            Thread t = new Thread(worker);
+            t.start();
+        } catch (IOException e) {
+            System.out.println("Failed to notify client: " + e.getMessage());
+            notifySessionEnd();
+        }
     }
 
     private static void sendWaitingMessage(Socket clientSocket) {
         // Envia uma mensagem informando ao cliente que ele está na fila
         new Thread(() -> {
             try (DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
-                out.writeUTF("Server is full. You are in the waiting queue. Please wait until a slot becomes available.");
+                out.writeUTF("Server is full. You are in the waiting queue. Please wait until a slot becomes available. Use [exit] to leave the queue");
                 out.flush();
                 lock.lock();
                 try{
                     while (activeSessions >= MAX_SESSIONS) { 
                         isAvailable.await(); 
                     }
+                    activeSessions++;
+                    startWorker(clientSocket);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {

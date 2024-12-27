@@ -58,7 +58,7 @@ public class Worker implements Runnable{
 
                             if (cmanager.authenticateUser(username, password)) {
                                 // Autenticação bem-sucedida
-                                out.writeUTF("Login successful! Welcome, " + username + "!\nChoose an option: [put], [get], [multiget], [multiput], [getwhen] or [exit]");
+                                out.writeUTF("Login successful! Welcome, " + username + "!\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                                 out.flush();
                                 authenticated = true;
                             } else {

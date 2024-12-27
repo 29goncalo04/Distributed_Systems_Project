@@ -131,7 +131,7 @@ public class ClientManager{
 
                 put(key,data);
 
-                out.writeUTF("Data stored successfully with key: " + key + "\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                out.writeUTF("Data stored successfully with key: " + key + "\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                 out.flush();
             } 
 
@@ -142,7 +142,7 @@ public class ClientManager{
                 String key = in.readUTF();
 
                 if(!dataStorage.containsKey(key)){
-                    out.writeUTF("Key not found\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                    out.writeUTF("Key not found\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                     out.flush();
                 } else {
                     byte[] value;
@@ -156,10 +156,10 @@ public class ClientManager{
                         result = result.replace("\\n", "\n");
 
                         // Enviar a resposta formatada ao cliente
-                        out.writeUTF("Value for key " + key + ":\n" + result + "\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                        out.writeUTF("Value for key " + key + ":\n" + result + "\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                         out.flush();
                     } else {
-                        out.writeUTF("Key not found: " + key + ".\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                        out.writeUTF("Key not found: " + key + ".\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                         out.flush();
                     }
                 }
@@ -204,7 +204,7 @@ public class ClientManager{
                 // Armazena múltiplos pares chave-valor
                 multiPut(pairs);
 
-                out.writeUTF("Multiple data stored successfully.\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                out.writeUTF("Multiple data stored successfully.\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                 out.flush();
             } 
             // Opção "multiGet" - recupera múltiplos pares chave-valor
@@ -234,11 +234,11 @@ public class ClientManager{
                         String value = new String(entry.getValue(), "UTF-8").replace("\\n", "\n");
                         response.append("Value for key ").append(key).append(":\n").append(value).append("\n");
                     }
-                    response.append("Choose an option: [put], [get], [multiPut], [multiGet], [getwhen], or [exit]");
+                    response.append("Choose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                     out.writeUTF(response.toString());
                     out.flush();
                 } else {
-                    out.writeUTF("No keys found.\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                    out.writeUTF("No keys found.\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                     out.flush();
                 }
             }
@@ -249,14 +249,14 @@ public class ClientManager{
                 String keyCond = in.readUTF();
 
                 if(!dataStorage.containsKey(keyCond)){
-                    out.writeUTF("Key not found\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                    out.writeUTF("Key not found\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                     out.flush();
                 } else {
                     out.writeUTF("Write the key:");
                     out.flush();
                     String key = in.readUTF();
                     if(!dataStorage.containsKey(key)){
-                        out.writeUTF("Key not found\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                        out.writeUTF("Key not found\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                         out.flush();
                     }
                     else{
@@ -273,10 +273,10 @@ public class ClientManager{
                             result = result.replace("\\n", "\n");
 
                             // Enviar a resposta formatada ao cliente
-                            out.writeUTF("Value for key " + key + ":\n" + result + "\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                            out.writeUTF("Value for key " + key + ":\n" + result + "\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                             out.flush();
                         } else {
-                            out.writeUTF("The condition does not match keyCond.\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                            out.writeUTF("The condition does not match keyCond.\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                             out.flush();
                         }
                     }
@@ -287,7 +287,7 @@ public class ClientManager{
                 out.flush();
                 break;
             } else {
-                out.writeUTF("Invalid option.\nChoose an option: [put], [get], [multiPut], [multiGet], [getwhen] or [exit]");
+                out.writeUTF("Invalid option.\nChoose an option: [put], [get], [multiput], [multiget], [getwhen] or [exit]");
                 out.flush();
             }
         }

@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
     private static final int PORT = 12345;
-    private static final int MAX_SESSIONS = 1; 
+    private static final int MAX_SESSIONS = 2; 
     public static final ClientManager cmanager = new ClientManager();
     private static final Queue<Socket> waitingQueue = new LinkedList<>();
     private static final ReentrantLock lock = new ReentrantLock();

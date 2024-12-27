@@ -10,7 +10,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Client {
-    private boolean emEspera = false;
+    private boolean emEspera = true;
     private ReentrantLock lock = new ReentrantLock();
     Condition serverReady = lock.newCondition();
 
@@ -36,7 +36,6 @@ public class Client {
             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()))){
             
-
             Client client = new Client();
             
             System.out.println("Connected to the server.");
@@ -80,29 +79,31 @@ public class Client {
                         client.lock.lock(); 
                         try{
                             while(client.isEmEspera()){
-                                client.serverReady.await();   //espera até ser possível enviar mensagens ao server    
-                            }
-
-                            // Limpa o buffer do console após sair da espera
-                            while (console.ready()) {
-                                console.readLine(); // Descarta entradas não processadas
-                            }
-                            
-                            if ((userInput = console.readLine()) != null) {
-                                if (userInput.equalsIgnoreCase("exit")) {
-                                    break; // Encerra o cliente
+                                try {
+                                    client.serverReady.await();
+                                    // Limpa o buffer da consola após sair da espera
+                                    while (console.ready()) {
+                                        console.readLine(); // Descarta entradas não processadas
+                                    }
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
-                            out.writeUTF(userInput); // Envia a mensagem ao servidor
-                            out.flush();
                             }
-
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } finally{
-                            client.lock.unlock();
+                        } finally {
+                            client.lock.unlock();  // Libera o lock assim que a espera termina
                         }
-
-                        // Lê a entrada do usuário após sair da espera
+                        if ((userInput = console.readLine()) != null) {
+                            if (userInput.equalsIgnoreCase("exit")) {
+                                break; // Encerra o cliente
+                            }
+                            client.lock.lock(); 
+                            try {
+                                out.writeUTF(userInput);  // Envia a mensagem ao servidor
+                                out.flush();
+                            } finally {
+                                client.lock.unlock();
+                            }
+                        }
                     }
                 } catch (IOException e) {
                     System.out.println("Error writing to server: " + e.getMessage());

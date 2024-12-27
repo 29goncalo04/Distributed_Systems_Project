@@ -11,7 +11,7 @@ public class Worker implements Runnable{
     private static final ReentrantLock lock = new ReentrantLock();
 
     private final Socket clientSocket;
-    public ClientManager cmanager;
+    public final ClientManager cmanager;
 
     public Worker(Socket clientSocket, ClientManager cmanager) {
         this.clientSocket = clientSocket;
